@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard — University SMS</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="student-layout">
+
+  <!-- Navbar -->
+  <nav class="student-navbar">
+    <a href="student-dashboard.html" class="navbar-brand">
+      <i class="bi bi-mortarboard-fill"></i>
+      <span>University SMS</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="student-dashboard.html" class="active">Dashboard</a></li>
+      <li><a href="student-registration.html">Registration</a></li>
+    </ul>
+    <div style="display:flex;align-items:center;gap:.75rem;">
+      <span id="navUserName" style="font-size:.85rem;color:rgba(255,255,255,.65);"></span>
+      <button onclick="logout()" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.3);padding:.4rem .875rem;font-size:.8rem;">
+        <i class="bi bi-box-arrow-right"></i> Logout
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="student-main">
+    <div style="max-width:900px;margin:0 auto;">
+
+      <!-- Welcome Banner -->
+      <div class="welcome-banner">
+        <div>
+          <h2 id="welcomeMsg">Welcome back!</h2>
+          <p id="welcomeSub">Manage your academic registration from your dashboard.</p>
+        </div>
+        <i class="bi bi-mortarboard welcome-icon"></i>
+      </div>
+
+      <!-- Status Cards Row -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-person-check"></i></div>
+          <div class="stat-info">
+            <h3 id="regStatus">—</h3>
+            <p>Registration Status</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-book"></i></div>
+          <div class="stat-info">
+            <h3 id="courseCount">—</h3>
+            <p>Enrolled Courses</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-building"></i></div>
+          <div class="stat-info">
+            <h3 id="deptName">—</h3>
+            <p>Department</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Area -->
+      <div id="dashboardContent">
+        <div class="loading-state">
+          <div class="spinner spinner-dark"></div>
+          <span>Loading your profile...</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/student.js"></script>
+  <script>
+    requireAuth('STUDENT');
+
+    document.getElementById('navUserName').textContent = localStorage.getItem('userName') || '';
+
+    async function loadDashboard() {
+      try {
+        const data = await apiGet('/api/students/me');
+        const content = document.getElementById('dashboardContent');
+
+        if (!data.registered) {
+          // Not registered yet
+          document.getElementById('regStatus').textContent = 'Pending';
+          document.getElementById('courseCount').textContent = '0';
+          document.getElementById('deptName').textContent = 'N/A';
+
+          content.innerHTML = `
+            <div class="card">
+              <div class="card-body" style="text-align:center;padding:3rem;">
+                <div style="width:72px;height:72px;background:#f5f5f5;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:1.5rem;">
+                  <i class="bi bi-clipboard-plus" style="font-size:2rem;color:#111;"></i>
+                </div>
+                <h3 style="margin-bottom:.5rem;">Complete Your Registration</h3>
+                <p style="color:#666;max-width:380px;margin:0 auto 2rem;">You haven't submitted your academic registration yet. Fill out your profile to get started.</p>
+                <a href="student-registration.html" class="btn btn-primary btn-lg">
+                  <i class="bi bi-pencil-square"></i> Start Registration
+                </a>
+              </div>
+            </div>`;
+        } else {
+          const s = data.student;
+          document.getElementById('regStatus').textContent = 'Complete';
+          document.getElementById('courseCount').textContent = s.enrollments ? s.enrollments.length : '0';
+          document.getElementById('deptName').textContent = s.department ? s.department.departmentName : 'N/A';
+          document.getElementById('welcomeMsg').textContent = `Welcome back, ${s.fullName.split(' ')[0]}!`;
+
+          const avatarHtml = s.profilePicture
+            ? `<img src="${s.profilePicture}" class="profile-avatar" alt="Profile">`
+            : `<div class="profile-avatar-placeholder"><i class="bi bi-person"></i></div>`;
+
+          const enrollHtml = s.enrollments && s.enrollments.length > 0
+            ? s.enrollments.map(e => `
+                <tr>
+                  <td>${e.course ? e.course.courseName : '—'}</td>
+                  <td>${e.course && e.course.department ? e.course.department.departmentName : '—'}</td>
+                  <td>${e.course ? e.course.creditHours : '—'}</td>
+                  <td><span class="badge">${e.grade || 'Pending'}</span></td>
+                  <td style="color:#666;font-size:.8rem;">${new Date(e.enrollmentDate).toLocaleDateString()}</td>
+                </tr>`).join('')
+            : `<tr><td colspan="5" class="empty-state" style="padding:2rem;text-align:center;"><i class="bi bi-info-circle" style="font-size:1rem;opacity:.4;margin-right:.5rem;"></i>No courses enrolled yet.</td></tr>`;
+
+          content.innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem;">
+              <!-- Profile Card -->
+              <div class="card">
+                <div class="card-header">
+                  <h3><i class="bi bi-person-circle" style="margin-right:.5rem;"></i>Profile</h3>
+                  <a href="student-registration.html" class="btn btn-outline btn-sm">
+                    <i class="bi bi-pencil"></i> Edit
+                  </a>
+                </div>
+                <div class="card-body">
+                  <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;">
+                    ${avatarHtml}
+                    <div>
+                      <h4 style="margin:0;font-size:1rem;">${s.fullName}</h4>
+                      <p style="margin:0;font-size:.85rem;">${s.rollNumber}</p>
+                    </div>
+                  </div>
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <label>Email</label>
+                      <p>${s.email}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Phone</label>
+                      <p>${s.phone || '—'}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Program</label>
+                      <p>${s.program || '—'}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Semester</label>
+                      <p>${s.semester ? 'Semester ' + s.semester : '—'}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Gender</label>
+                      <p>${s.gender || '—'}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Blood Group</label>
+                      <p>${s.bloodGroup || '—'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Academic Card -->
+              <div class="card">
+                <div class="card-header">
+                  <h3><i class="bi bi-building" style="margin-right:.5rem;"></i>Academic Info</h3>
+                </div>
+                <div class="card-body">
+                  <div style="display:flex;flex-direction:column;gap:1rem;">
+                    <div class="info-item">
+                      <label>Department</label>
+                      <p>${s.department ? s.department.departmentName : '—'}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Location</label>
+                      <p>${s.department && s.department.location ? s.department.location : '—'}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Date of Birth</label>
+                      <p>${s.dateOfBirth ? new Date(s.dateOfBirth).toLocaleDateString() : '—'}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Emergency Contact</label>
+                      <p>${s.emergencyContact || '—'}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Address</label>
+                      <p>${s.address || '—'}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Registered On</label>
+                      <p>${new Date(s.registrationDate).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Enrolled Courses -->
+            <div class="card">
+              <div class="card-header">
+                <h3><i class="bi bi-journal-bookmark" style="margin-right:.5rem;"></i>Enrolled Courses</h3>
+              </div>
+              <div class="table-wrapper" style="border:none;border-radius:0;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Course Name</th>
+                      <th>Department</th>
+                      <th>Credit Hours</th>
+                      <th>Grade</th>
+                      <th>Enrolled On</th>
+                    </tr>
+                  </thead>
+                  <tbody>${enrollHtml}</tbody>
+                </table>
+              </div>
+            </div>`;
+        }
+      } catch (err) {
+        document.getElementById('dashboardContent').innerHTML = `
+          <div class="card"><div class="card-body empty-state">
+            <i class="bi bi-exclamation-circle"></i>
+            <h3>Could not load data</h3>
+            <p>Make sure the backend server is running on port 5000.</p>
+          </div></div>`;
+      }
+    }
+
+    loadDashboard();
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

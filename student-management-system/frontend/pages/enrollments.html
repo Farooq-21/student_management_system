@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enrollments — University SMS</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="admin-layout">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="bi bi-mortarboard-fill"></i></div>
+      <div class="brand-text"><h2>University SMS</h2><p>Admin Portal</p></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Main</div>
+      <div class="nav-item"><a href="../admin-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></div>
+      <div class="nav-item"><a href="students.html"><i class="bi bi-people-fill"></i> Students</a></div>
+      <div class="nav-label">Management</div>
+      <div class="nav-item"><a href="departments.html"><i class="bi bi-building"></i> Departments</a></div>
+      <div class="nav-item"><a href="courses.html"><i class="bi bi-journal-bookmark-fill"></i> Courses</a></div>
+      <div class="nav-item"><a href="enrollments.html" class="active"><i class="bi bi-person-check-fill"></i> Enrollments</a></div>
+    </nav>
+    <div class="sidebar-footer">
+      <button onclick="logout()" class="btn" style="width:100%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.12);font-size:.875rem;">
+        <i class="bi bi-box-arrow-left"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+        <span class="topbar-title">Enrollments</span>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary btn-sm" onclick="openEnrollModal()"><i class="bi bi-plus-lg"></i> New Enrollment</button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div style="margin-bottom:1.5rem;">
+        <h2 style="margin-bottom:.2rem;">Enrollments</h2>
+        <p style="color:#666;margin:0;">Manage student course enrollments and grades</p>
+      </div>
+
+      <div class="card">
+        <div class="table-wrapper" style="border:none;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Student</th>
+                <th>Roll No.</th>
+                <th>Course</th>
+                <th>Department</th>
+                <th>Enrolled On</th>
+                <th style="text-align:center;">Grade</th>
+                <th style="text-align:center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="enrollmentsBody">
+              <tr><td colspan="8"><div class="loading-state"><div class="spinner spinner-dark"></div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New Enrollment Modal -->
+<div class="modal-overlay" id="enrollModal">
+  <div class="modal-box" style="max-width:460px;">
+    <div class="modal-header">
+      <h3><i class="bi bi-person-plus" style="margin-right:.5rem;"></i>New Enrollment</h3>
+      <button class="modal-close" onclick="closeModal('enrollModal')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="enrollAlert" style="display:none;padding:.75rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:.875rem;"></div>
+      <div class="form-group">
+        <label class="form-label">Student *</label>
+        <select id="enrollStudent" class="form-select"><option value="">Loading students...</option></select>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">Course *</label>
+        <select id="enrollCourse" class="form-select"><option value="">Loading courses...</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('enrollModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveEnrollBtn" onclick="saveEnrollment()"><i class="bi bi-check2"></i> Enroll</button>
+    </div>
+  </div>
+</div>
+
+<!-- Grade Modal -->
+<div class="modal-overlay" id="gradeModal">
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-header">
+      <h3><i class="bi bi-award" style="margin-right:.5rem;"></i>Update Grade</h3>
+      <button class="modal-close" onclick="closeModal('gradeModal')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="gradeEnrollId">
+      <p style="margin-bottom:1rem;font-size:.875rem;" id="gradeModalSubtitle"></p>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">Grade</label>
+        <select id="gradeValue" class="form-select">
+          <option value="">Pending</option>
+          <option value="A+">A+</option><option value="A">A</option><option value="A-">A-</option>
+          <option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option>
+          <option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option>
+          <option value="D">D</option><option value="F">F</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('gradeModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveGrade()"><i class="bi bi-check2"></i> Save Grade</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>Remove Enrollment</h3>
+      <button class="modal-close" onclick="closeModal('deleteModal')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body"><p>Remove this enrollment record? This cannot be undone.</p></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn"><i class="bi bi-trash"></i> Remove</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="../js/auth.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+  requireAuth('ADMIN');
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('active');
+  }
+
+  async function loadEnrollments() {
+    try {
+      const data = await apiGet('/api/enrollments');
+      const tbody = document.getElementById('enrollmentsBody');
+      if (!data.enrollments || data.enrollments.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="bi bi-person-check"></i><h3>No enrollments yet</h3><p>Use the "New Enrollment" button to enroll a student.</p></div></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = data.enrollments.map((e, i) => `
+        <tr>
+          <td style="color:#aaa;font-size:.85rem;">${i+1}</td>
+          <td><strong>${e.student ? e.student.fullName : '—'}</strong></td>
+          <td style="font-family:monospace;font-size:.85rem;">${e.student ? e.student.rollNumber : '—'}</td>
+          <td>${e.course ? e.course.courseName : '—'}</td>
+          <td style="color:#666;">${e.course && e.course.department ? e.course.department.departmentName : '—'}</td>
+          <td style="color:#666;font-size:.8rem;">${new Date(e.enrollmentDate).toLocaleDateString()}</td>
+          <td style="text-align:center;">
+            <button onclick="openGrade(${e.enrollmentId},'${(e.student?e.student.fullName:'').replace(/'/g,"\\'")} — ${(e.course?e.course.courseName:'').replace(/'/g,"\\'")}','${e.grade||''}')"
+              class="badge" style="cursor:pointer;border-color:${e.grade ? '#000' : '#ddd'};">${e.grade || 'Pending'}</button>
+          </td>
+          <td style="text-align:center;">
+            <button class="btn btn-ghost btn-sm" onclick="openDelete(${e.enrollmentId});" style="color:#c00;"><i class="bi bi-trash"></i></button>
+          </td>
+        </tr>`).join('');
+    } catch(e) {
+      document.getElementById('enrollmentsBody').innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="bi bi-exclamation-circle"></i><p>Error loading enrollments.</p></div></td></tr>`;
+    }
+  }
+
+  async function openEnrollModal() {
+    document.getElementById('enrollAlert').style.display = 'none';
+    // Load students
+    try {
+      const stuData = await apiGet('/api/students?limit=200');
+      const stuSel = document.getElementById('enrollStudent');
+      stuSel.innerHTML = '<option value="">Select student</option>';
+      (stuData.students||[]).forEach(s => {
+        const o = document.createElement('option');
+        o.value = s.studentId; o.textContent = `${s.fullName} (${s.rollNumber})`;
+        stuSel.appendChild(o);
+      });
+    } catch(e) { document.getElementById('enrollStudent').innerHTML = '<option value="">Error loading</option>'; }
+
+    // Load courses
+    try {
+      const cData = await apiGet('/api/courses');
+      const cSel = document.getElementById('enrollCourse');
+      cSel.innerHTML = '<option value="">Select course</option>';
+      (cData.courses||[]).forEach(c => {
+        const o = document.createElement('option');
+        o.value = c.courseId; o.textContent = `${c.courseName} (${c.creditHours} cr)`;
+        cSel.appendChild(o);
+      });
+    } catch(e) { document.getElementById('enrollCourse').innerHTML = '<option value="">Error loading</option>'; }
+
+    openModal('enrollModal');
+  }
+
+  async function saveEnrollment() {
+    const btn = document.getElementById('saveEnrollBtn');
+    const alertEl = document.getElementById('enrollAlert');
+    const studentId = document.getElementById('enrollStudent').value;
+    const courseId = document.getElementById('enrollCourse').value;
+    if (!studentId || !courseId) { showInlineAlert(alertEl, 'error', 'Please select both a student and a course.'); return; }
+
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+    try {
+      const res = await fetch('/api/enrollments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: JSON.stringify({ studentId: parseInt(studentId), courseId: parseInt(courseId) }),
+      });
+      const data = await res.json();
+      if (data.success) { closeModal('enrollModal'); showToast('success', 'Student enrolled successfully'); loadEnrollments(); }
+      else showInlineAlert(alertEl, 'error', data.message);
+    } catch(e) { showInlineAlert(alertEl, 'error', 'Server error'); }
+    btn.disabled = false; btn.innerHTML = '<i class="bi bi-check2"></i> Enroll';
+  }
+
+  function openGrade(id, label, current) {
+    document.getElementById('gradeEnrollId').value = id;
+    document.getElementById('gradeModalSubtitle').textContent = label;
+    document.getElementById('gradeValue').value = current || '';
+    openModal('gradeModal');
+  }
+
+  async function saveGrade() {
+    const id = document.getElementById('gradeEnrollId').value;
+    const grade = document.getElementById('gradeValue').value;
+    try {
+      const res = await fetch(`/api/enrollments/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: JSON.stringify({ grade }),
+      });
+      const data = await res.json();
+      closeModal('gradeModal');
+      if (data.success) { showToast('success', 'Grade updated'); loadEnrollments(); }
+      else showToast('error', data.message);
+    } catch(e) { showToast('error', 'Server error'); }
+  }
+
+  function openDelete(id) {
+    document.getElementById('confirmDeleteBtn').onclick = async () => {
+      const btn = document.getElementById('confirmDeleteBtn');
+      btn.disabled = true; btn.textContent = 'Removing...';
+      try {
+        const res = await fetch(`/api/enrollments/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+        const data = await res.json();
+        closeModal('deleteModal');
+        if (data.success) { showToast('success', 'Enrollment removed'); loadEnrollments(); }
+        else showToast('error', data.message);
+      } catch(e) { showToast('error', 'Server error'); }
+      btn.disabled = false; btn.textContent = 'Remove';
+    };
+    openModal('deleteModal');
+  }
+
+  function showInlineAlert(el, type, msg) {
+    el.style.display = 'block';
+    el.style.background = type === 'error' ? '#fff0f0' : '#f0fff4';
+    el.style.border = type === 'error' ? '1px solid #fcc' : '1px solid #9b9';
+    el.style.color = type === 'error' ? '#c00' : '#333';
+    el.textContent = msg;
+  }
+
+  loadEnrollments();
+  function logout() { localStorage.clear(); window.location.href = '../login.html'; }
+</script>
+</body>
+</html>

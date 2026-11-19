@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Courses — University SMS</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="admin-layout">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="bi bi-mortarboard-fill"></i></div>
+      <div class="brand-text"><h2>University SMS</h2><p>Admin Portal</p></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Main</div>
+      <div class="nav-item"><a href="../admin-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></div>
+      <div class="nav-item"><a href="students.html"><i class="bi bi-people-fill"></i> Students</a></div>
+      <div class="nav-label">Management</div>
+      <div class="nav-item"><a href="departments.html"><i class="bi bi-building"></i> Departments</a></div>
+      <div class="nav-item"><a href="courses.html" class="active"><i class="bi bi-journal-bookmark-fill"></i> Courses</a></div>
+      <div class="nav-item"><a href="enrollments.html"><i class="bi bi-person-check-fill"></i> Enrollments</a></div>
+    </nav>
+    <div class="sidebar-footer">
+      <button onclick="logout()" class="btn" style="width:100%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.12);font-size:.875rem;">
+        <i class="bi bi-box-arrow-left"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+        <span class="topbar-title">Courses</span>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary btn-sm" onclick="openAddModal()"><i class="bi bi-plus-lg"></i> Add Course</button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div style="margin-bottom:1.5rem;">
+        <h2 style="margin-bottom:.2rem;">Courses</h2>
+        <p style="color:#666;margin:0;">Manage university courses</p>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-input-wrapper" style="max-width:300px;">
+          <i class="bi bi-search"></i>
+          <input type="text" id="searchInput" class="form-control" placeholder="Search courses…">
+        </div>
+        <select id="deptFilter" class="form-select" style="max-width:220px;">
+          <option value="">All Departments</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <div class="table-wrapper" style="border:none;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Course Name</th>
+                <th>Department</th>
+                <th>Credit Hours</th>
+                <th style="text-align:center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="coursesBody">
+              <tr><td colspan="5"><div class="loading-state"><div class="spinner spinner-dark"></div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="courseModal">
+  <div class="modal-box" style="max-width:460px;">
+    <div class="modal-header">
+      <h3 id="modalTitle">Add Course</h3>
+      <button class="modal-close" onclick="closeModal('courseModal')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="courseAlert" style="display:none;padding:.75rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:.875rem;"></div>
+      <input type="hidden" id="editId">
+      <div class="form-group">
+        <label class="form-label">Course Name *</label>
+        <input type="text" id="courseName" class="form-control" placeholder="e.g. Introduction to Programming">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Department</label>
+          <select id="courseDept" class="form-select"><option value="">No Department</option></select>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Credit Hours</label>
+          <select id="creditHours" class="form-select">
+            <option value="1">1</option><option value="2">2</option>
+            <option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('courseModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveCourseBtn" onclick="saveCourse()"><i class="bi bi-check2"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>Delete Course</h3>
+      <button class="modal-close" onclick="closeModal('deleteModal')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <p>Delete <strong id="deleteItemName"></strong>? This cannot be undone.</p>
+      <p style="color:#c00;font-size:.85rem;margin-top:.5rem;">Note: Deletion will fail if students are enrolled in this course.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn"><i class="bi bi-trash"></i> Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="../js/auth.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+  requireAuth('ADMIN');
+  let allCourses = [], depts = [];
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('active');
+  }
+
+  async function loadDepts() {
+    try {
+      const data = await apiGet('/api/departments');
+      depts = data.departments || [];
+      const deptFilter = document.getElementById('deptFilter');
+      const courseDept = document.getElementById('courseDept');
+      depts.forEach(d => {
+        [deptFilter, courseDept].forEach(sel => {
+          const o = document.createElement('option');
+          o.value = d.departmentId; o.textContent = d.departmentName;
+          sel.appendChild(o);
+        });
+      });
+    } catch(e) {}
+  }
+
+  async function loadCourses() {
+    try {
+      const data = await apiGet('/api/courses');
+      allCourses = data.courses || [];
+      renderTable(allCourses);
+    } catch(e) {
+      document.getElementById('coursesBody').innerHTML =
+        `<tr><td colspan="5"><div class="empty-state"><i class="bi bi-exclamation-circle"></i><p>Error loading courses.</p></div></td></tr>`;
+    }
+  }
+
+  function renderTable(courses) {
+    const tbody = document.getElementById('coursesBody');
+    if (!courses.length) {
+      tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="bi bi-journal-bookmark"></i><h3>No courses yet</h3><p>Add your first course using the button above.</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = courses.map((c, i) => `
+      <tr>
+        <td style="color:#aaa;font-size:.85rem;">${i+1}</td>
+        <td><strong>${c.courseName}</strong></td>
+        <td>${c.department ? c.department.departmentName : '<span style="color:#aaa;">—</span>'}</td>
+        <td><span class="badge">${c.creditHours} cr</span></td>
+        <td>
+          <div class="table-actions" style="justify-content:center;">
+            <button class="btn btn-ghost btn-sm" onclick="openEdit(${c.courseId})"><i class="bi bi-pencil"></i> Edit</button>
+            <button class="btn btn-ghost btn-sm" onclick="openDelete(${c.courseId},'${c.courseName.replace(/'/g,"\\'")}');" style="color:#c00;"><i class="bi bi-trash"></i> Delete</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  document.getElementById('searchInput').addEventListener('input', filterTable);
+  document.getElementById('deptFilter').addEventListener('change', filterTable);
+
+  function filterTable() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const d = document.getElementById('deptFilter').value;
+    renderTable(allCourses.filter(c =>
+      c.courseName.toLowerCase().includes(q) &&
+      (!d || (c.department && c.department.departmentId == d))
+    ));
+  }
+
+  function openAddModal() {
+    document.getElementById('modalTitle').textContent = 'Add Course';
+    document.getElementById('editId').value = '';
+    document.getElementById('courseName').value = '';
+    document.getElementById('courseDept').value = '';
+    document.getElementById('creditHours').value = '3';
+    document.getElementById('courseAlert').style.display = 'none';
+    openModal('courseModal');
+  }
+
+  function openEdit(id) {
+    const c = allCourses.find(x => x.courseId === id);
+    if (!c) return;
+    document.getElementById('modalTitle').textContent = 'Edit Course';
+    document.getElementById('editId').value = c.courseId;
+    document.getElementById('courseName').value = c.courseName;
+    document.getElementById('courseDept').value = c.department ? c.department.departmentId : '';
+    document.getElementById('creditHours').value = c.creditHours;
+    document.getElementById('courseAlert').style.display = 'none';
+    openModal('courseModal');
+  }
+
+  async function saveCourse() {
+    const btn = document.getElementById('saveCourseBtn');
+    const alertEl = document.getElementById('courseAlert');
+    const id = document.getElementById('editId').value;
+    const name = document.getElementById('courseName').value.trim();
+    if (!name) { showInlineAlert(alertEl, 'error', 'Course name is required.'); return; }
+
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+    try {
+      const url = id ? `/api/courses/${id}` : '/api/courses';
+      const res = await fetch(url, {
+        method: id ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: JSON.stringify({ courseName: name, creditHours: document.getElementById('creditHours').value, departmentId: document.getElementById('courseDept').value }),
+      });
+      const data = await res.json();
+      if (data.success) { closeModal('courseModal'); showToast('success', id ? 'Course updated' : 'Course added'); loadCourses(); }
+      else showInlineAlert(alertEl, 'error', data.message);
+    } catch(e) { showInlineAlert(alertEl, 'error', 'Server error'); }
+    btn.disabled = false; btn.innerHTML = '<i class="bi bi-check2"></i> Save';
+  }
+
+  function openDelete(id, name) {
+    document.getElementById('deleteItemName').textContent = name;
+    document.getElementById('confirmDeleteBtn').onclick = async () => {
+      const btn = document.getElementById('confirmDeleteBtn');
+      btn.disabled = true; btn.textContent = 'Deleting...';
+      try {
+        const res = await fetch(`/api/courses/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+        const data = await res.json();
+        closeModal('deleteModal');
+        if (data.success) { showToast('success', 'Course deleted'); loadCourses(); }
+        else showToast('error', data.message);
+      } catch(e) { showToast('error', 'Server error'); }
+      btn.disabled = false; btn.textContent = 'Delete';
+    };
+    openModal('deleteModal');
+  }
+
+  function showInlineAlert(el, type, msg) {
+    el.style.display = 'block';
+    el.style.background = type === 'error' ? '#fff0f0' : '#f0fff4';
+    el.style.border = type === 'error' ? '1px solid #fcc' : '1px solid #9b9';
+    el.style.color = type === 'error' ? '#c00' : '#333';
+    el.textContent = msg;
+  }
+
+  async function init() { await loadDepts(); await loadCourses(); }
+  init();
+  function logout() { localStorage.clear(); window.location.href = '../login.html'; }
+</script>
+</body>
+</html>

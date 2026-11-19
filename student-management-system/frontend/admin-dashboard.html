@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — University SMS</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="admin-layout">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="bi bi-mortarboard-fill"></i></div>
+      <div class="brand-text"><h2>University SMS</h2><p>Admin Portal</p></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Main</div>
+      <div class="nav-item"><a href="admin-dashboard.html" class="active"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></div>
+      <div class="nav-item"><a href="pages/students.html"><i class="bi bi-people-fill"></i> Students</a></div>
+      <div class="nav-label">Management</div>
+      <div class="nav-item"><a href="pages/departments.html"><i class="bi bi-building"></i> Departments</a></div>
+      <div class="nav-item"><a href="pages/courses.html"><i class="bi bi-journal-bookmark-fill"></i> Courses</a></div>
+      <div class="nav-item"><a href="pages/enrollments.html"><i class="bi bi-person-check-fill"></i> Enrollments</a></div>
+    </nav>
+    <div class="sidebar-footer">
+      <button onclick="logout()" class="btn" style="width:100%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.12);font-size:.875rem;">
+        <i class="bi bi-box-arrow-left"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-content">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+        <span class="topbar-title">Dashboard</span>
+      </div>
+      <div class="topbar-right">
+        <span style="font-size:.85rem;color:#666;" id="adminName"></span>
+        <div class="admin-avatar" id="adminAvatar">A</div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div style="margin-bottom:1.75rem;">
+        <h2 style="font-size:1.4rem;margin-bottom:.25rem;">Welcome back, <span id="adminGreeting">Admin</span></h2>
+        <p style="color:#666;margin:0;">Here's an overview of the student management system.</p>
+      </div>
+
+      <!-- Stats Row -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.75rem;">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+          <div class="stat-info"><h3 id="totalStudents">—</h3><p>Total Students</p></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-building"></i></div>
+          <div class="stat-info"><h3 id="totalDepts">—</h3><p>Departments</p></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+          <div class="stat-info"><h3 id="totalCourses">—</h3><p>Courses</p></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-person-check-fill"></i></div>
+          <div class="stat-info"><h3 id="totalEnrollments">—</h3><p>Enrollments</p></div>
+        </div>
+      </div>
+
+      <!-- Quick Nav Cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:1.75rem;">
+        <a href="pages/students.html" style="text-decoration:none;">
+          <div class="card" style="padding:1.25rem;display:flex;align-items:center;gap:1rem;transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'" onmouseout="this.style.boxShadow=''">
+            <div style="width:44px;height:44px;background:#000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="bi bi-people-fill" style="color:#fff;font-size:1.1rem;"></i>
+            </div>
+            <div><p style="font-weight:700;color:#111;margin:0;font-size:.95rem;">Manage Students</p><p style="color:#666;margin:0;font-size:.8rem;">View, edit, delete</p></div>
+          </div>
+        </a>
+        <a href="pages/departments.html" style="text-decoration:none;">
+          <div class="card" style="padding:1.25rem;display:flex;align-items:center;gap:1rem;transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'" onmouseout="this.style.boxShadow=''">
+            <div style="width:44px;height:44px;background:#000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="bi bi-building" style="color:#fff;font-size:1.1rem;"></i>
+            </div>
+            <div><p style="font-weight:700;color:#111;margin:0;font-size:.95rem;">Departments</p><p style="color:#666;margin:0;font-size:.8rem;">Add, edit, delete</p></div>
+          </div>
+        </a>
+        <a href="pages/courses.html" style="text-decoration:none;">
+          <div class="card" style="padding:1.25rem;display:flex;align-items:center;gap:1rem;transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'" onmouseout="this.style.boxShadow=''">
+            <div style="width:44px;height:44px;background:#000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="bi bi-journal-bookmark-fill" style="color:#fff;font-size:1.1rem;"></i>
+            </div>
+            <div><p style="font-weight:700;color:#111;margin:0;font-size:.95rem;">Courses</p><p style="color:#666;margin:0;font-size:.8rem;">Add, edit, delete</p></div>
+          </div>
+        </a>
+        <a href="pages/enrollments.html" style="text-decoration:none;">
+          <div class="card" style="padding:1.25rem;display:flex;align-items:center;gap:1rem;transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'" onmouseout="this.style.boxShadow=''">
+            <div style="width:44px;height:44px;background:#000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="bi bi-person-check-fill" style="color:#fff;font-size:1.1rem;"></i>
+            </div>
+            <div><p style="font-weight:700;color:#111;margin:0;font-size:.95rem;">Enrollments</p><p style="color:#666;margin:0;font-size:.8rem;">Enroll & grade</p></div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Recent Students -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="bi bi-clock-history" style="margin-right:.5rem;"></i>Recent Registrations</h3>
+          <a href="pages/students.html" class="btn btn-outline btn-sm">View All</a>
+        </div>
+        <div class="table-wrapper" style="border:none;border-radius:0 0 8px 8px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Roll No.</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Department</th>
+                <th>Semester</th>
+                <th>Registered</th>
+              </tr>
+            </thead>
+            <tbody id="recentStudentsBody">
+              <tr><td colspan="6" class="loading-state" style="padding:2rem;text-align:center;">
+                <div class="spinner spinner-dark" style="margin:0 auto .5rem;"></div> Loading...
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /admin-layout -->
+
+<script src="../js/auth.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+  requireAuth('ADMIN');
+  const name = localStorage.getItem('userName') || 'Admin';
+  document.getElementById('adminName').textContent = name;
+  document.getElementById('adminGreeting').textContent = name.split(' ')[0];
+  document.getElementById('adminAvatar').textContent = name.charAt(0).toUpperCase();
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('active');
+  }
+
+  async function loadStats() {
+    try {
+      const data = await apiGet('/api/students/stats');
+      if (data.success) {
+        document.getElementById('totalStudents').textContent = data.stats.totalStudents;
+        document.getElementById('totalDepts').textContent = data.stats.totalDepartments;
+        document.getElementById('totalCourses').textContent = data.stats.totalCourses;
+        document.getElementById('totalEnrollments').textContent = data.stats.totalEnrollments;
+      }
+    } catch (e) {
+      ['totalStudents','totalDepts','totalCourses','totalEnrollments'].forEach(id => {
+        document.getElementById(id).textContent = '—';
+      });
+    }
+  }
+
+  async function loadRecentStudents() {
+    try {
+      const data = await apiGet('/api/students?limit=5&page=1');
+      const tbody = document.getElementById('recentStudentsBody');
+      if (!data.students || data.students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="bi bi-inbox"></i><p>No students registered yet.</p></div></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = data.students.map(s => `
+        <tr>
+          <td><span style="font-family:monospace;font-weight:600;">${s.rollNumber}</span></td>
+          <td><strong>${s.fullName}</strong></td>
+          <td style="color:#666;">${s.email}</td>
+          <td>${s.department ? s.department.departmentName : '<span style="color:#aaa;">—</span>'}</td>
+          <td>${s.semester ? 'Sem ' + s.semester : '<span style="color:#aaa;">—</span>'}</td>
+          <td style="color:#666;font-size:.8rem;">${new Date(s.registrationDate).toLocaleDateString()}</td>
+        </tr>`).join('');
+    } catch (e) {
+      document.getElementById('recentStudentsBody').innerHTML =
+        `<tr><td colspan="6"><div class="empty-state"><i class="bi bi-exclamation-circle"></i><p>Could not load students.</p></div></td></tr>`;
+    }
+  }
+
+  loadStats();
+  loadRecentStudents();
+
+  function logout() { localStorage.clear(); window.location.href = '../login.html'; }
+</script>
+</body>
+</html>

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Students — University SMS</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="admin-layout">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="bi bi-mortarboard-fill"></i></div>
+      <div class="brand-text"><h2>University SMS</h2><p>Admin Portal</p></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Main</div>
+      <div class="nav-item"><a href="../admin-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></div>
+      <div class="nav-item"><a href="students.html" class="active"><i class="bi bi-people-fill"></i> Students</a></div>
+      <div class="nav-label">Management</div>
+      <div class="nav-item"><a href="departments.html"><i class="bi bi-building"></i> Departments</a></div>
+      <div class="nav-item"><a href="courses.html"><i class="bi bi-journal-bookmark-fill"></i> Courses</a></div>
+      <div class="nav-item"><a href="enrollments.html"><i class="bi bi-person-check-fill"></i> Enrollments</a></div>
+    </nav>
+    <div class="sidebar-footer">
+      <button onclick="logout()" class="btn" style="width:100%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.12);font-size:.875rem;">
+        <i class="bi bi-box-arrow-left"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+        <span class="topbar-title">Students</span>
+      </div>
+      <div class="topbar-right">
+        <span style="font-size:.85rem;color:#666;" id="adminName"></span>
+        <div class="admin-avatar">A</div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <h2 style="margin-bottom:.2rem;">Student Records</h2>
+          <p style="color:#666;margin:0;">All registered students — <span id="totalCount">0</span> total</p>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="search-input-wrapper" style="flex:2;min-width:220px;">
+          <i class="bi bi-search"></i>
+          <input type="text" id="searchInput" class="form-control" placeholder="Search by name, roll number or email…">
+        </div>
+        <div style="min-width:180px;">
+          <select id="deptFilter" class="form-select">
+            <option value="">All Departments</option>
+          </select>
+        </div>
+        <div style="min-width:150px;">
+          <select id="semFilter" class="form-select">
+            <option value="">All Semesters</option>
+            <option value="1">Semester 1</option>
+            <option value="2">Semester 2</option>
+            <option value="3">Semester 3</option>
+            <option value="4">Semester 4</option>
+            <option value="5">Semester 5</option>
+            <option value="6">Semester 6</option>
+            <option value="7">Semester 7</option>
+            <option value="8">Semester 8</option>
+          </select>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="resetFilters()"><i class="bi bi-x-circle"></i> Clear</button>
+      </div>
+
+      <!-- Table -->
+      <div class="card">
+        <div class="table-wrapper" style="border:none;">
+          <table>
+            <thead>
+              <tr>
+                <th>Roll No.</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Department</th>
+                <th>Semester</th>
+                <th>Registered</th>
+                <th style="text-align:center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="studentsBody">
+              <tr><td colspan="7"><div class="loading-state"><div class="spinner spinner-dark"></div><span>Loading students...</span></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Pagination -->
+        <div style="padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #e5e5e5;flex-wrap:wrap;gap:.75rem;">
+          <span id="pageInfo" style="font-size:.875rem;color:#666;"></span>
+          <ul class="pagination" id="pagination"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Modal -->
+<div class="modal-overlay" id="viewModal">
+  <div class="modal-box" style="max-width:680px;">
+    <div class="modal-header">
+      <h3><i class="bi bi-person-circle" style="margin-right:.5rem;"></i>Student Details</h3>
+      <button class="modal-close" onclick="closeModal('viewModal')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body" id="viewModalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('viewModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3><i class="bi bi-pencil" style="margin-right:.5rem;"></i>Edit Student</h3>
+      <button class="modal-close" onclick="closeModal('editModal')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="editAlert" style="display:none;padding:.75rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:.875rem;"></div>
+      <form id="editForm">
+        <input type="hidden" id="editId">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Full Name</label><input type="text" id="editFullName" class="form-control"></div>
+          <div class="form-group"><label class="form-label">Roll Number</label><input type="text" id="editRollNumber" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Email</label><input type="email" id="editEmail" class="form-control"></div>
+          <div class="form-group"><label class="form-label">Phone</label><input type="tel" id="editPhone" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Department</label>
+            <select id="editDept" class="form-select"><option value="">Loading...</option></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Semester</label>
+            <select id="editSemester" class="form-select">
+              <option value="">—</option>
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+              <option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Program</label>
+            <select id="editProgram" class="form-select">
+              <option value="">—</option>
+              <option>Bachelor of Science</option><option>Bachelor of Engineering</option>
+              <option>Bachelor of Business Administration</option>
+              <option>Master of Science</option><option>Master of Business Administration</option><option>PhD</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Blood Group</label>
+            <select id="editBlood" class="form-select">
+              <option value="">—</option>
+              <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+              <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('editModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveEditBtn" onclick="saveEdit()"><i class="bi bi-check2"></i> Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header">
+      <h3><i class="bi bi-trash" style="margin-right:.5rem;"></i>Confirm Delete</h3>
+      <button class="modal-close" onclick="closeModal('deleteModal')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to delete student <strong id="deleteStudentName"></strong>? This will also remove all their enrollments and cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn"><i class="bi bi-trash"></i> Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="../js/auth.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+  requireAuth('ADMIN');
+  document.getElementById('adminName').textContent = localStorage.getItem('userName') || '';
+
+  let currentPage = 1;
+  const pageSize = 10;
+  let deleteId = null;
+  let departments = [];
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('active');
+  }
+
+  async function loadDepartmentsFilter() {
+    try {
+      const data = await apiGet('/api/departments');
+      departments = data.departments || [];
+      const sel = document.getElementById('deptFilter');
+      departments.forEach(d => {
+        const o = document.createElement('option');
+        o.value = d.departmentId; o.textContent = d.departmentName;
+        sel.appendChild(o);
+      });
+    } catch(e) {}
+  }
+
+  async function loadStudents(page = 1) {
+    currentPage = page;
+    const search = document.getElementById('searchInput').value.trim();
+    const deptId = document.getElementById('deptFilter').value;
+    const sem = document.getElementById('semFilter').value;
+
+    let url = `/api/students?page=${page}&limit=${pageSize}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (deptId) url += `&departmentId=${deptId}`;
+    if (sem) url += `&semester=${sem}`;
+
+    const tbody = document.getElementById('studentsBody');
+    tbody.innerHTML = `<tr><td colspan="7"><div class="loading-state"><div class="spinner spinner-dark"></div><span>Loading...</span></div></td></tr>`;
+
+    try {
+      const data = await apiGet(url);
+      document.getElementById('totalCount').textContent = data.total || 0;
+
+      if (!data.students || data.students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="bi bi-inbox"></i><h3>No students found</h3><p>Try adjusting your search or filters.</p></div></td></tr>`;
+        document.getElementById('pageInfo').textContent = '';
+        document.getElementById('pagination').innerHTML = '';
+        return;
+      }
+
+      tbody.innerHTML = data.students.map(s => `
+        <tr>
+          <td><span style="font-family:monospace;font-weight:600;">${s.rollNumber}</span></td>
+          <td><strong>${s.fullName}</strong></td>
+          <td style="color:#666;font-size:.85rem;">${s.email}</td>
+          <td>${s.department ? s.department.departmentName : '<span style="color:#aaa;">—</span>'}</td>
+          <td>${s.semester ? '<span class="badge">Sem ' + s.semester + '</span>' : '<span style="color:#aaa;">—</span>'}</td>
+          <td style="color:#666;font-size:.8rem;">${new Date(s.registrationDate).toLocaleDateString()}</td>
+          <td>
+            <div class="table-actions" style="justify-content:center;">
+              <button class="btn btn-ghost btn-sm" onclick="viewStudent(${s.studentId})" title="View"><i class="bi bi-eye"></i></button>
+              <button class="btn btn-ghost btn-sm" onclick="openEdit(${s.studentId})" title="Edit"><i class="bi bi-pencil"></i></button>
+              <button class="btn btn-ghost btn-sm" onclick="openDelete(${s.studentId},'${s.fullName.replace(/'/g,"\\'")}');" title="Delete" style="color:#c00;"><i class="bi bi-trash"></i></button>
+            </div>
+          </td>
+        </tr>`).join('');
+
+      // Pagination
+      const totalPages = data.totalPages || 1;
+      document.getElementById('pageInfo').textContent = `Showing ${(page-1)*pageSize+1}–${Math.min(page*pageSize, data.total)} of ${data.total}`;
+      renderPagination(page, totalPages);
+    } catch(e) {
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="bi bi-exclamation-circle"></i><p>Error loading students.</p></div></td></tr>`;
+    }
+  }
+
+  function renderPagination(current, total) {
+    const ul = document.getElementById('pagination');
+    ul.innerHTML = '';
+    const prev = document.createElement('li');
+    prev.className = 'page-item' + (current === 1 ? ' disabled' : '');
+    prev.innerHTML = `<a class="page-link" onclick="loadStudents(${current-1})"><i class="bi bi-chevron-left"></i></a>`;
+    ul.appendChild(prev);
+    for (let i = 1; i <= total; i++) {
+      const li = document.createElement('li');
+      li.className = 'page-item' + (i === current ? ' active' : '');
+      li.innerHTML = `<a class="page-link" onclick="loadStudents(${i})">${i}</a>`;
+      ul.appendChild(li);
+    }
+    const next = document.createElement('li');
+    next.className = 'page-item' + (current === total ? ' disabled' : '');
+    next.innerHTML = `<a class="page-link" onclick="loadStudents(${current+1})"><i class="bi bi-chevron-right"></i></a>`;
+    ul.appendChild(next);
+  }
+
+  async function viewStudent(id) {
+    const body = document.getElementById('viewModalBody');
+    body.innerHTML = `<div class="loading-state"><div class="spinner spinner-dark"></div></div>`;
+    openModal('viewModal');
+    try {
+      const data = await apiGet(`/api/students/${id}`);
+      const s = data.student;
+      const avatar = s.profilePicture
+        ? `<img src="${s.profilePicture}" class="profile-avatar" style="width:64px;height:64px;" alt="Profile">`
+        : `<div class="profile-avatar-placeholder" style="width:64px;height:64px;font-size:1.5rem;"><i class="bi bi-person"></i></div>`;
+      const enrollHtml = s.enrollments && s.enrollments.length > 0
+        ? s.enrollments.map(e => `<div style="padding:.5rem 0;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:.875rem;">${e.course ? e.course.courseName : '—'}</span>
+            <span class="badge">${e.grade || 'Pending'}</span>
+          </div>`).join('')
+        : '<p style="color:#aaa;font-size:.875rem;">No courses enrolled.</p>';
+      body.innerHTML = `
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid #e5e5e5;">
+          ${avatar}
+          <div>
+            <h3 style="margin:0;font-size:1.1rem;">${s.fullName}</h3>
+            <p style="margin:0;font-size:.85rem;font-family:monospace;">${s.rollNumber}</p>
+            <span class="badge" style="margin-top:.4rem;">${s.department ? s.department.departmentName : 'No Dept'}</span>
+          </div>
+        </div>
+        <div class="detail-two-col" style="margin-bottom:1.5rem;">
+          <div class="info-item"><label>Email</label><p>${s.email}</p></div>
+          <div class="info-item"><label>Phone</label><p>${s.phone || '—'}</p></div>
+          <div class="info-item"><label>Program</label><p>${s.program || '—'}</p></div>
+          <div class="info-item"><label>Semester</label><p>${s.semester ? 'Semester ' + s.semester : '—'}</p></div>
+          <div class="info-item"><label>Gender</label><p>${s.gender || '—'}</p></div>
+          <div class="info-item"><label>Blood Group</label><p>${s.bloodGroup || '—'}</p></div>
+          <div class="info-item"><label>Date of Birth</label><p>${s.dateOfBirth ? new Date(s.dateOfBirth).toLocaleDateString() : '—'}</p></div>
+          <div class="info-item"><label>Emergency Contact</label><p>${s.emergencyContact || '—'}</p></div>
+          <div class="info-item" style="grid-column:1/-1;"><label>Address</label><p>${s.address || '—'}</p></div>
+          <div class="info-item"><label>Registered On</label><p>${new Date(s.registrationDate).toLocaleDateString()}</p></div>
+        </div>
+        <div>
+          <p style="font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem;">Enrolled Courses</p>
+          ${enrollHtml}
+        </div>`;
+    } catch(e) {
+      body.innerHTML = '<p style="color:#c00;">Could not load student details.</p>';
+    }
+  }
+
+  async function openEdit(id) {
+    const data = await apiGet(`/api/students/${id}`);
+    const s = data.student;
+    document.getElementById('editId').value = s.studentId;
+    document.getElementById('editFullName').value = s.fullName;
+    document.getElementById('editRollNumber').value = s.rollNumber;
+    document.getElementById('editEmail').value = s.email;
+    document.getElementById('editPhone').value = s.phone || '';
+    document.getElementById('editSemester').value = s.semester || '';
+    document.getElementById('editProgram').value = s.program || '';
+    document.getElementById('editBlood').value = s.bloodGroup || '';
+
+    const deptSel = document.getElementById('editDept');
+    deptSel.innerHTML = '<option value="">No Department</option>';
+    departments.forEach(d => {
+      const o = document.createElement('option');
+      o.value = d.departmentId; o.textContent = d.departmentName;
+      if (s.department && s.department.departmentId == d.departmentId) o.selected = true;
+      deptSel.appendChild(o);
+    });
+
+    document.getElementById('editAlert').style.display = 'none';
+    openModal('editModal');
+  }
+
+  async function saveEdit() {
+    const btn = document.getElementById('saveEditBtn');
+    const alertEl = document.getElementById('editAlert');
+    const id = document.getElementById('editId').value;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+
+    const payload = {
+      fullName: document.getElementById('editFullName').value.trim(),
+      rollNumber: document.getElementById('editRollNumber').value.trim(),
+      email: document.getElementById('editEmail').value.trim(),
+      phone: document.getElementById('editPhone').value.trim(),
+      semester: document.getElementById('editSemester').value,
+      program: document.getElementById('editProgram').value,
+      bloodGroup: document.getElementById('editBlood').value,
+      departmentId: document.getElementById('editDept').value,
+    };
+
+    try {
+      const res = await fetch(`/api/students/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (data.success) {
+        closeModal('editModal');
+        showToast('success', 'Student updated successfully');
+        loadStudents(currentPage);
+      } else {
+        showInlineAlert(alertEl, 'error', data.message);
+      }
+    } catch(e) { showInlineAlert(alertEl, 'error', 'Server error'); }
+    btn.disabled = false; btn.innerHTML = '<i class="bi bi-check2"></i> Save Changes';
+  }
+
+  function openDelete(id, name) {
+    deleteId = id;
+    document.getElementById('deleteStudentName').textContent = name;
+    document.getElementById('confirmDeleteBtn').onclick = async () => {
+      const btn = document.getElementById('confirmDeleteBtn');
+      btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Deleting...';
+      try {
+        const res = await fetch(`/api/students/${deleteId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeModal('deleteModal');
+          showToast('success', 'Student deleted');
+          loadStudents(currentPage);
+        } else { showToast('error', data.message); }
+      } catch(e) { showToast('error', 'Server error'); }
+      btn.disabled = false; btn.textContent = 'Delete';
+    };
+    openModal('deleteModal');
+  }
+
+  function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('deptFilter').value = '';
+    document.getElementById('semFilter').value = '';
+    loadStudents(1);
+  }
+
+  let searchTimer;
+  document.getElementById('searchInput').addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => loadStudents(1), 400);
+  });
+  document.getElementById('deptFilter').addEventListener('change', () => loadStudents(1));
+  document.getElementById('semFilter').addEventListener('change', () => loadStudents(1));
+
+  function showInlineAlert(el, type, msg) {
+    el.style.display = 'block';
+    el.style.background = type === 'error' ? '#fff0f0' : '#f0fff4';
+    el.style.border = type === 'error' ? '1px solid #fcc' : '1px solid #9b9';
+    el.style.color = type === 'error' ? '#c00' : '#333';
+    el.textContent = msg;
+  }
+
+  loadDepartmentsFilter();
+  loadStudents(1);
+
+  function logout() { localStorage.clear(); window.location.href = '../login.html'; }
+</script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Registration — University SMS</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="student-layout">
+
+  <nav class="student-navbar">
+    <a href="student-dashboard.html" class="navbar-brand">
+      <i class="bi bi-mortarboard-fill"></i>
+      <span>University SMS</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="student-dashboard.html">Dashboard</a></li>
+      <li><a href="student-registration.html" class="active">Registration</a></li>
+    </ul>
+    <div style="display:flex;align-items:center;gap:.75rem;">
+      <span id="navUserName" style="font-size:.85rem;color:rgba(255,255,255,.65);"></span>
+      <button onclick="logout()" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.3);padding:.4rem .875rem;font-size:.8rem;">
+        <i class="bi bi-box-arrow-right"></i> Logout
+      </button>
+    </div>
+  </nav>
+
+  <main class="student-main">
+    <div style="max-width:800px;margin:0 auto;">
+
+      <!-- Page Header -->
+      <div style="margin-bottom:1.5rem;">
+        <h2 style="margin-bottom:.25rem;">Academic Registration</h2>
+        <p style="color:#666;margin:0;">Complete your student profile. All fields marked * are required.</p>
+      </div>
+
+      <div id="alertBox" style="display:none;padding:.875rem 1.25rem;border-radius:8px;margin-bottom:1.25rem;font-size:.875rem;"></div>
+
+      <form id="registrationForm" novalidate enctype="multipart/form-data">
+
+        <!-- Section A: Personal Info -->
+        <div class="card" style="margin-bottom:1.25rem;">
+          <div class="card-header">
+            <h3 style="font-size:1rem;"><i class="bi bi-person-lines-fill" style="margin-right:.5rem;"></i>Personal Information</h3>
+          </div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="fullName">Full Name *</label>
+                <input type="text" id="fullName" class="form-control" placeholder="Muhammad Ali Khan" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="rollNumber">Roll Number *</label>
+                <input type="text" id="rollNumber" class="form-control" placeholder="e.g. 242751" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="email">Email Address *</label>
+                <input type="email" id="email" class="form-control" placeholder="student@university.edu" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="phone">Phone Number</label>
+                <input type="tel" id="phone" class="form-control" placeholder="+92 300 1234567">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="gender">Gender</label>
+                <select id="gender" class="form-select">
+                  <option value="">Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Prefer not to say">Prefer not to say</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="dateOfBirth">Date of Birth</label>
+                <input type="date" id="dateOfBirth" class="form-control">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="address">Address</label>
+              <textarea id="address" class="form-control" rows="2" placeholder="House #, Street, City, Country"></textarea>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" for="profilePicture">Profile Picture <span style="font-weight:400;color:#999;">(Optional, max 5MB)</span></label>
+              <input type="file" id="profilePicture" class="form-control file-input-wrapper" accept="image/jpeg,image/png,image/gif,image/webp">
+              <div id="picPreviewWrapper" style="display:none;margin-top:.75rem;">
+                <img id="picPreview" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid #e5e5e5;" alt="Preview">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section B: Academic Info -->
+        <div class="card" style="margin-bottom:1.25rem;">
+          <div class="card-header">
+            <h3 style="font-size:1rem;"><i class="bi bi-building" style="margin-right:.5rem;"></i>Academic Information</h3>
+          </div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="departmentId">Department</label>
+                <select id="departmentId" class="form-select">
+                  <option value="">Loading departments...</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="program">Academic Program</label>
+                <select id="program" class="form-select">
+                  <option value="">Select program</option>
+                  <option value="Bachelor of Science">Bachelor of Science (BS)</option>
+                  <option value="Bachelor of Engineering">Bachelor of Engineering (BE)</option>
+                  <option value="Bachelor of Business Administration">Bachelor of Business Admin (BBA)</option>
+                  <option value="Master of Science">Master of Science (MS)</option>
+                  <option value="Master of Business Administration">Master of Business Admin (MBA)</option>
+                  <option value="PhD">PhD</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="semester">Current Semester</label>
+                <select id="semester" class="form-select">
+                  <option value="">Select semester</option>
+                  <option value="1">1st Semester</option>
+                  <option value="2">2nd Semester</option>
+                  <option value="3">3rd Semester</option>
+                  <option value="4">4th Semester</option>
+                  <option value="5">5th Semester</option>
+                  <option value="6">6th Semester</option>
+                  <option value="7">7th Semester</option>
+                  <option value="8">8th Semester</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section C: Additional Info -->
+        <div class="card" style="margin-bottom:1.5rem;">
+          <div class="card-header">
+            <h3 style="font-size:1rem;"><i class="bi bi-info-circle" style="margin-right:.5rem;"></i>Additional Information</h3>
+          </div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="emergencyContact">Emergency Contact</label>
+                <input type="tel" id="emergencyContact" class="form-control" placeholder="+92 300 9876543">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="bloodGroup">Blood Group</label>
+                <select id="bloodGroup" class="form-select">
+                  <option value="">Select blood group</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:1rem;justify-content:flex-end;flex-wrap:wrap;">
+          <a href="student-dashboard.html" class="btn btn-outline">Cancel</a>
+          <button type="submit" id="submitBtn" class="btn btn-primary btn-lg">
+            <i class="bi bi-check2-circle"></i> <span id="submitLabel">Submit Registration</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/student.js"></script>
+  <script>
+    requireAuth('STUDENT');
+    document.getElementById('navUserName').textContent = localStorage.getItem('userName') || '';
+
+    let editMode = false;
+    let existingStudentId = null;
+
+    // Profile picture preview
+    document.getElementById('profilePicture').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          document.getElementById('picPreview').src = ev.target.result;
+          document.getElementById('picPreviewWrapper').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    async function loadDepartments(selectedId = null) {
+      try {
+        const data = await apiGet('/api/departments');
+        const sel = document.getElementById('departmentId');
+        sel.innerHTML = '<option value="">Select department</option>';
+        (data.departments || []).forEach(d => {
+          const opt = document.createElement('option');
+          opt.value = d.departmentId;
+          opt.textContent = d.departmentName;
+          if (selectedId && d.departmentId == selectedId) opt.selected = true;
+          sel.appendChild(opt);
+        });
+      } catch (e) {
+        document.getElementById('departmentId').innerHTML = '<option value="">Could not load departments</option>';
+      }
+    }
+
+    async function checkExisting() {
+      try {
+        const data = await apiGet('/api/students/me');
+        if (data.registered && data.student) {
+          editMode = true;
+          existingStudentId = data.student.studentId;
+          const s = data.student;
+          document.getElementById('submitLabel').textContent = 'Update Registration';
+          document.querySelector('h2').textContent = 'Update Registration';
+
+          document.getElementById('fullName').value = s.fullName || '';
+          document.getElementById('rollNumber').value = s.rollNumber || '';
+          document.getElementById('email').value = s.email || '';
+          document.getElementById('phone').value = s.phone || '';
+          document.getElementById('gender').value = s.gender || '';
+          document.getElementById('dateOfBirth').value = s.dateOfBirth ? s.dateOfBirth.split('T')[0] : '';
+          document.getElementById('address').value = s.address || '';
+          document.getElementById('program').value = s.program || '';
+          document.getElementById('semester').value = s.semester || '';
+          document.getElementById('emergencyContact').value = s.emergencyContact || '';
+          document.getElementById('bloodGroup').value = s.bloodGroup || '';
+
+          if (s.profilePicture) {
+            document.getElementById('picPreview').src = s.profilePicture;
+            document.getElementById('picPreviewWrapper').style.display = 'block';
+          }
+
+          await loadDepartments(s.department ? s.department.departmentId : null);
+        } else {
+          await loadDepartments();
+          // Pre-fill email from user account
+          const meData = await apiGet('/api/auth/me');
+          if (meData.user) {
+            document.getElementById('fullName').value = meData.user.fullName || '';
+            document.getElementById('email').value = meData.user.email || '';
+          }
+        }
+      } catch (e) {
+        await loadDepartments();
+      }
+    }
+
+    checkExisting();
+
+    document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const alertBox = document.getElementById('alertBox');
+
+      const fullName = document.getElementById('fullName').value.trim();
+      const rollNumber = document.getElementById('rollNumber').value.trim();
+      const email = document.getElementById('email').value.trim();
+
+      if (!fullName || !rollNumber || !email) {
+        showAlert(alertBox, 'error', 'Full Name, Roll Number, and Email are required.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Submitting...';
+
+      const formData = new FormData();
+      formData.append('fullName', fullName);
+      formData.append('rollNumber', rollNumber);
+      formData.append('email', email);
+      formData.append('phone', document.getElementById('phone').value.trim());
+      formData.append('gender', document.getElementById('gender').value);
+      formData.append('dateOfBirth', document.getElementById('dateOfBirth').value);
+      formData.append('address', document.getElementById('address').value.trim());
+      formData.append('program', document.getElementById('program').value);
+      formData.append('semester', document.getElementById('semester').value);
+      formData.append('emergencyContact', document.getElementById('emergencyContact').value.trim());
+      formData.append('bloodGroup', document.getElementById('bloodGroup').value);
+      formData.append('departmentId', document.getElementById('departmentId').value);
+
+      const picFile = document.getElementById('profilePicture').files[0];
+      if (picFile) formData.append('profilePicture', picFile);
+
+      try {
+        const token = localStorage.getItem('token');
+        let url = '/api/students';
+        let method = 'POST';
+        if (editMode && existingStudentId) {
+          url = `/api/students/${existingStudentId}`;
+          method = 'PUT';
+        }
+
+        const res = await fetch(url, {
+          method,
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData,
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showAlert(alertBox, 'success', data.message || 'Registration submitted successfully!');
+          setTimeout(() => { window.location.href = 'student-dashboard.html'; }, 1200);
+        } else {
+          showAlert(alertBox, 'error', data.message || 'Submission failed');
+          btn.disabled = false;
+          btn.innerHTML = `<i class="bi bi-check2-circle"></i> ${editMode ? 'Update' : 'Submit'} Registration`;
+        }
+      } catch (err) {
+        showAlert(alertBox, 'error', 'Cannot connect to server. Is the backend running?');
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-check2-circle"></i> ${editMode ? 'Update' : 'Submit'} Registration`;
+      }
+    });
+
+    function showAlert(el, type, msg) {
+      el.style.display = 'block';
+      el.style.background = type === 'error' ? '#fff0f0' : '#f0fff4';
+      el.style.border = type === 'error' ? '1px solid #fcc' : '1px solid #9b9';
+      el.style.color = type === 'error' ? '#c00' : '#333';
+      el.textContent = msg;
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+  </script>
+</body>
+</html>
